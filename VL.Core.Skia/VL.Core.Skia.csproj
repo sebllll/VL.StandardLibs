@@ -14,7 +14,6 @@
     <PackageReference Include="SkiaSharp" ExcludeAssets="build;buildTransitive" />
     <PackageReference Include="SkiaSharp.Svg" ExcludeAssets="build;buildTransitive" />
     <PackageReference Include="System.Drawing.Common" />
-    <PackageReference Include="Topten.RichTextKit" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\VL.Core\src\VL.Core.csproj" />
@@ -25,5 +24,10 @@
       <!-- As a package we can make use of nuget's asset system, it will make the proper entry in the *.deps.json file for the native library lookup to work -->
       <PackagePath>runtimes</PackagePath>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Topten.RichTextKit">
+      <HintPath>dependencies\Topten.RichTextKit.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>
