@@ -18,6 +18,8 @@ using VL.Stride.Core;
 using Stride.Core.Diagnostics;
 using System.Threading;
 using VL.Stride.Input;
+using Microsoft.Extensions.DependencyInjection;
+using VL.Lib.Basics.Video;
 
 [assembly: AssemblyInitializer(typeof(VL.Stride.Lib.Initialization))]
 
@@ -55,9 +57,9 @@ namespace VL.Stride.Lib
                 GlobalLogger.GlobalMessageLogged += new LogBridge(loggerFactory, defaultLogger);
             }
 
-            var services = appHost.Services.RegisterService<IResourceProvider<Game>>(_ =>
+            var services = appHost.Services.RegisterService<VLGame>(_ =>
             {
-                var game = new VLGame(appHost.NodeFactoryRegistry).DisposeBy(appHost);
+                var game = new VLGame(appHost.NodeFactoryRegistry);
 
                 // Check for --debug-gpu commandline flag to load debug graphics device
                 if (Array.Exists(Environment.GetCommandLineArgs(), argument => argument == "--debug-gpu"))
@@ -137,10 +139,14 @@ namespace VL.Stride.Lib
                     game.Services.GetService<RenderDocManager>()?.RemoveHooks();
                 };
 
-                return ResourceProvider.Return<Game>(game);
+                return game;
             });
+            appHost.Services.RegisterService<Game>(s => s.GetRequiredService<VLGame>());
+            if (appHost.IsUser)
+                appHost.Services.RegisterService<IGraphicsDeviceProvider>(s => s.GetRequiredService<VLGame>());
 
             // Older code paths (like CEF) use obsolete IVLFactory.CreateService(NodeContext => IResourceProvider<Game>)
+            appHost.Services.RegisterService<IResourceProvider<Game>>(s => ResourceProvider.Return(s.GetRequiredService<Game>()));
             appHost.Factory.RegisterService<NodeContext, IResourceProvider<Game>>(ctx => services.GetGameProvider());
 
             services.RegisterProvider(game =>

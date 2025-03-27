@@ -78,7 +78,7 @@ namespace VL.Lib.Reactive
         public void SetValueAndAuthor(T? value, string? author)
         {
             AssertAlive();
-            if (!Enabled || !this.IsValid())
+            if (!Enabled)
                 return;
 
             if (Validator != null)
@@ -399,7 +399,7 @@ namespace VL.Lib.Reactive
             }
         }
 
-        public Type ClrTypeOfValues => original.ClrTypeOfValues;
+        public Type ClrTypeOfValues => typeof(T);
 
         public ImmutableArray<object> Components
         {
@@ -407,7 +407,12 @@ namespace VL.Lib.Reactive
             set => original.Components = value;
         }
 
-        public IChannel<object> ChannelOfObject => original.ChannelOfObject;
+        IChannel<object> IChannel.ChannelOfObject => channelOfObject;
+
+        protected abstract IChannel<object> channelOfObject
+        {
+            get;
+        }
 
         public bool Enabled
         {
@@ -530,6 +535,8 @@ namespace VL.Lib.Reactive
         }
 
         object? IMonadicValue.BoxedValue => original.BoxedValue;
+
+        protected override IChannel<object> channelOfObject => this;
 
         public static implicit operator T?(ChannelView<T> c) => c.Value;
 
