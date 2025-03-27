@@ -33,6 +33,9 @@ namespace VL.Lib.Mathematics
 {
     public sealed class SmallestEnclosingCircle
     {
+        private static readonly Random Rand = new Random();
+        private static readonly List<Vector2> ReusableList = new List<Vector2>();
+
         /// <summary>
         /// Returns the smallest circle that encloses all the given points. Runs in expected O(n) time, randomized.
         /// Note: If 0 points are given, a circle of radius -1 is returned. If 1 point is given, a circle of radius 0 is returned.
@@ -42,23 +45,23 @@ namespace VL.Lib.Mathematics
         public static Circle SmallestCircle(Spread<Vector2> points)
         {
             // Clone list to preserve the caller's data, do Durstenfeld shuffle
-            List<Vector2> shuffled = points.ToList<Vector2>();
-            Random rand = new Random();
-            for (int i = shuffled.Count - 1; i > 0; i--)
+            ReusableList.Clear();
+            ReusableList.AddRange(points);
+            for (int i = ReusableList.Count - 1; i > 0; i--)
             {
-                int j = rand.Next(i + 1);
-                Vector2 temp = shuffled[i];
-                shuffled[i] = shuffled[j];
-                shuffled[j] = temp;
+                int j = Rand.Next(i + 1);
+                Vector2 temp = ReusableList[i];
+                ReusableList[i] = ReusableList[j];
+                ReusableList[j] = temp;
             }
 
             // Progressively add points to circle or recompute circle
             Circle c = CircleExtensions.INVALID;
-            for (int i = 0; i < shuffled.Count; i++)
+            for (int i = 0; i < ReusableList.Count; i++)
             {
-                Vector2 p = shuffled[i];
+                Vector2 p = ReusableList[i];
                 if (c.Radius < 0 || !c.Contains(p))
-                    c = MakeCircleOnePoint(shuffled.GetRange(0, i + 1), p);
+                    c = MakeCircleOnePoint(ReusableList.GetRange(0, i + 1), p);
             }
             return c;
         }
