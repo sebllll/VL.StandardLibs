@@ -50,9 +50,7 @@ namespace VL.Lib.Mathematics
             for (int i = ReusableList.Count - 1; i > 0; i--)
             {
                 int j = Rand.Next(i + 1);
-                Vector2 temp = ReusableList[i];
-                ReusableList[i] = ReusableList[j];
-                ReusableList[j] = temp;
+                (ReusableList[i], ReusableList[j]) = (ReusableList[j], ReusableList[i]);
             }
 
             // Progressively add points to circle or recompute circle
@@ -61,16 +59,16 @@ namespace VL.Lib.Mathematics
             {
                 Vector2 p = ReusableList[i];
                 if (c.Radius < 0 || !c.Contains(p))
-                    c = MakeCircleOnePoint(ReusableList.GetRange(0, i + 1), p);
+                    c = MakeCircleOnePoint(ReusableList, i + 1, p);
             }
             return c;
         }
 
         // One boundary point known
-        private static Circle MakeCircleOnePoint(List<Vector2> points, Vector2 p)
+        private static Circle MakeCircleOnePoint(List<Vector2> points, int count, Vector2 p)
         {
             Circle circ = new Circle(p, 0);
-            for (int i = 0; i < points.Count; i++)
+            for (int i = 0; i < count; i++)
             {
                 Vector2 q = points[i];
                 if (!circ.Contains(q))
@@ -78,14 +76,14 @@ namespace VL.Lib.Mathematics
                     if (circ.Radius == 0)
                         circ = MakeDiameter(p, q);
                     else
-                        circ = MakeCircleTwoPoints(points.GetRange(0, i + 1), p, q);
+                        circ = MakeCircleTwoPoints(points, i + 1, p, q);
                 }
             }
             return circ;
         }
 
         // Two boundary points known
-        private static Circle MakeCircleTwoPoints(List<Vector2> points, Vector2 p, Vector2 q)
+        private static Circle MakeCircleTwoPoints(List<Vector2> points, int count, Vector2 p, Vector2 q)
         {
             Circle circ = MakeDiameter(p, q);
             Circle left = CircleExtensions.INVALID;
@@ -93,8 +91,9 @@ namespace VL.Lib.Mathematics
 
             // For each point not in the two-point circle
             Vector2 pq = Vector2.Subtract(q, p);
-            foreach (Vector2 r in points)
+            for (int i = 0; i < count; i++)
             {
+                Vector2 r = points[i];
                 if (circ.Contains(r))
                     continue;
 
